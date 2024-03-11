@@ -2,19 +2,21 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
-# User Schemas
 class UserBase(BaseModel):
     email: str
-    username: str
+    username: Optional[str]
 
 class UserCreate(UserBase):
-    password: str
+    password: Optional[str]
 
-class User(UserBase):
+class User(UserCreate):
     id: int
+    picture: str
+    google_id: Optional[str]
+    description: Optional[str]
     hidden: bool
     premium: bool
-
+    
     class Config:
         from_attributes = True
 
@@ -28,6 +30,7 @@ class ArtCreate(ArtBase):
 class Art(ArtBase):
     id: int
     image: str
+    date: datetime
     premium: bool
     owner_id: Optional[int] = None
 
@@ -79,3 +82,7 @@ class ArtHistory(ArtHistoryBase):
 
     class Config:
         from_attributes = True
+
+class CategoryCount(BaseModel):
+    name: str
+    count: int

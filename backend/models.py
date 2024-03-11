@@ -1,7 +1,13 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from database import Base
+from datetime import datetime
+
+art_categories = Table('art_categories', Base.metadata,
+    Column('art_id', Integer, ForeignKey('arts.id'), primary_key=True),
+    Column('category_id', Integer, ForeignKey('categories.id'), primary_key=True)
+)
 
 class User(Base):
     __tablename__ = "users"
@@ -9,6 +15,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
     password = Column(String)
+    picture = Column(String)
+    google_id = Column(String, unique=True, index=True)
     description = Column(String)
     username = Column(String)
     hidden = Column(Boolean, default=False)
@@ -28,11 +36,13 @@ class Art(Base):
     image = Column(String)
     prompt = Column(String)
     premium = Column(Boolean, default=False)
+    date = Column(DateTime, default= datetime.utcnow)
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="arts")
     likes = relationship("Like", back_populates="art")
     art_history = relationship("ArtHistory", back_populates="art")
+    categories = relationship("Category", secondary=art_categories, back_populates="arts")
 
 class SearchHistory(Base):
     __tablename__ = "search_history"
@@ -72,3 +82,11 @@ class Follow(Base):
 
     follower = relationship("User", foreign_keys=[follower_id], back_populates="followers")
     followee = relationship("User", foreign_keys=[followee_id], back_populates="following")
+    
+class Category(Base):
+    __tablename__ = 'categories'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+
+    arts = relationship("Art", secondary=art_categories, back_populates="categories")
